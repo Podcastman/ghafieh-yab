@@ -65,7 +65,7 @@
 <body>
 <div class="container">
   <h1>🎵 قافیه‌یاب فارسی</h1>
-  <p class="subtitle">یه کلمه بنویس، هم‌قافیه‌هاشو ببین</p>
+  <p class="subtitle">قافیه‌های هم‌وزن برای کلمه‌ات</p>
   <div class="input-box">
     <input type="text" id="wordInput" placeholder="مثلاً: دل" autocomplete="off">
     <button id="searchBtn">بگرد</button>
@@ -85,17 +85,46 @@ const wordList = [
 ];
 
 // ============ حروف و مصوت‌های فارسی ============
-const shortVowels = ['َ','ِ','ُ','ا','و','ی']; // مصوت‌های کوتاه و بلند
-
-// تشخیص اینکه حرف، صامت هست یا مصوت
 function isVowel(ch) {
   return ['ا','آ','و','ی','ه','ء'].includes(ch);
 }
 
-// ============ استخراج آخرین هجا (قلب منطق قافیه) ============
-// هدف: آخرین بخش صوتی کلمه رو دربیاریم
-// مثال: "گل" → "َل" ، "کتاب" → "تاب" ، "قفل" → "ُفل"
+// اعراب‌ها (مصوت‌های کوتاه) — اگه کلمه اعراب داشته باشه
+const diacritics = ['َ','ِ','ُ','ً','ٍ','ٌ','ْ','ّ'];
 
+// ============ شمارش هجاهای کلمه (تقریبی) ============
+// قاعده: هر مصوت بلند (ا/و/ی) یا هر مصوت کوتاه (فتحه/کسره/ضمه) = 1 هجا
+function countSyllables(word) {
+  if (!word) return 0;
+  
+  let count = 0;
+  const chars = word.split('');
+  
+  for (let i = 0; i < chars.length; i++) {
+    const ch = chars[i];
+    
+    // مصوت بلند
+    if (['ا','آ','و','ی'].includes(ch)) {
+      // استثنا: "و" اگه بعدش مصوت باشه (مثل "خواهر") — تقریبی
+      count++;
+    }
+    // مصوت کوتاه (اعراب)
+    else if (diacritics.includes(ch)) {
+      count++;
+    }
+    // "ه" آخر کلمه معمولاً یه هجا می‌سازه
+    else if (ch === 'ه' && i === chars.length - 1) {
+      count++;
+    }
+  }
+  
+  // اگه هیچ مصوتی نبود، حداقل 1 هجا
+  if (count === 0) count = 1;
+  
+  return count;
+}
+
+// ============ استخراج آخرین هجا ============
 function getLastSyllable(word) {
   if (word.length === 0) return "";
   if (word.length === 1) return word;
@@ -103,72 +132,65 @@ function getLastSyllable(word) {
   const chars = word.split('');
   const last = chars[chars.length - 1];
   
-  // الگوی ۱: کلمه به مصوت ختم میشه (مثل "خانه" → "ـه")
-  // در این حالت، آخرین ۳ حرف رو بگیر (مثلاً "انه")
+  // کلمه به مصوت ختم میشه
   if (isVowel(last)) {
     return word.slice(-3);
   }
   
-  // الگوی ۲: کلمه به صامت ختم میشه
-  // ببین قبل از صامت آخر، مصوت داریم؟
   const beforeLast = chars[chars.length - 2];
   
-  // زیرالگو ۲.۱: فقط ۲ حرف داریم (مثل "گل" → "ـَل")
-  if (word.length <= 2) {
-    return word;
-  }
+  if (word.length <= 2) return word;
   
-  // زیرالگو ۲.۲: حرف قبل از آخر، مصوت هست (مثل "کتاب" → "ـتاب")
   if (isVowel(beforeLast)) {
-    // آخرین ۲ یا ۳ حرف بسته به طول
     return word.length <= 3 ? word : word.slice(-3);
   }
   
-  // زیرالگو ۲.۳: حرف قبل از آخر، صامت هست (مثل "قفل" → "ـُفل")
-  // یعنی دو صامت پشت هم داریم → آخرین ۳ حرف
   return word.slice(-3);
 }
 
-// ============ مقایسه دو کلمه برای قافیه ============
+// ============ مقایسه دو کلمه برای قافیه + وزن ============
 function isRhyme(word1, word2) {
   if (word1 === word2) return false;
   
+  // شرط 1: هم‌قافیه (آخرین هجا یکسان)
   const syl1 = getLastSyllable(word1);
   const syl2 = getLastSyllable(word2);
-  
-  // قافیه واقعی: آخرین هجاها یکی باشن
-  if (syl1 === syl2) return true;
-  
-  // قافیه تقریبی: اگه هر دو تک‌هجایی‌ان و آخرشون یکی هست
-  if (word1.length <= 2 && word2.length <= 2) {
-    return word1.slice(-1) === word2.slice(-1);
+  if (syl1 !== syl2) {
+    // استثنا: کلمات کوتاه
+    if (word1.length <= 2 && word2.length <= 2) {
+      if (word1.slice(-1) !== word2.slice(-1)) return false;
+    } else {
+      return false;
+    }
   }
   
-  // کلمه کوتاه توی بلند: "دل" توی "بلبل"
-  if (word2.endsWith(word1) || word1.endsWith(word2)) {
-    return true;
-  }
+  // شرط 2: هم‌وزن (تعداد هجا یکسان)
+  const count1 = countSyllables(word1);
+  const count2 = countSyllables(word2);
+  if (count1 !== count2) return false;
   
-  return false;
+  // شرط 3: طول کلمه مشابه (حداکثر 2 حرف اختلاف)
+  if (Math.abs(word1.length - word2.length) > 2) return false;
+  
+  return true;
 }
 
 // ============ تابع اصلی ============
 function findRhymes(word) {
   word = word.trim();
   if (!word) return [];
-  
   return wordList.filter(w => isRhyme(word, w));
 }
 
 // ============ نمایش نتایج ============
 function showResults(word, matches) {
   if (matches.length === 0) {
-    results.innerHTML = '<div class="no-result">قافیه‌ای پیدا نشد 😔</div>';
+    results.innerHTML = '<div class="no-result">قافیه هم‌وزنی پیدا نشد 😔</div>';
     return;
   }
   
   const html = `
-    <div class="result-title">${matches.length} قافیه برای «${word}»:</div>
+    <div class="result-title">${matches.length} قافیه هم‌وزن برای «${word}»:</div>
     <div class="words-list">
       ${matches.map(m => `<span class="word-item">${m}</span>`).join('')}
     </div>
