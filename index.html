@@ -5,11 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>قافیه‌یاب فارسی</title>
 <style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
     font-family: Tahoma, 'Segoe UI', sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -27,23 +23,9 @@
     width: 100%;
     box-shadow: 0 20px 60px rgba(0,0,0,0.3);
   }
-  h1 {
-    text-align: center;
-    color: #333;
-    margin-bottom: 10px;
-    font-size: 24px;
-  }
-  .subtitle {
-    text-align: center;
-    color: #888;
-    font-size: 13px;
-    margin-bottom: 25px;
-  }
-  .input-box {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
+  h1 { text-align: center; color: #333; margin-bottom: 10px; font-size: 24px; }
+  .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 25px; }
+  .input-box { display: flex; gap: 8px; margin-bottom: 20px; }
   #wordInput {
     flex: 1;
     padding: 14px 16px;
@@ -52,11 +34,8 @@
     border-radius: 12px;
     font-family: inherit;
     outline: none;
-    transition: border 0.3s;
   }
-  #wordInput:focus {
-    border-color: #667eea;
-  }
+  #wordInput:focus { border-color: #667eea; }
   #searchBtn {
     padding: 14px 24px;
     font-size: 16px;
@@ -67,25 +46,11 @@
     cursor: pointer;
     font-family: inherit;
     font-weight: bold;
-    transition: background 0.3s;
   }
-  #searchBtn:active {
-    background: #5568d3;
-  }
-  #results {
-    min-height: 100px;
-  }
-  .result-title {
-    color: #667eea;
-    font-size: 14px;
-    margin-bottom: 12px;
-    font-weight: bold;
-  }
-  .words-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+  #searchBtn:active { background: #5568d3; }
+  #results { min-height: 100px; }
+  .result-title { color: #667eea; font-size: 14px; margin-bottom: 12px; font-weight: bold; }
+  .words-list { display: flex; flex-wrap: wrap; gap: 8px; }
   .word-item {
     background: #f0f4ff;
     color: #444;
@@ -94,29 +59,22 @@
     font-size: 15px;
     border: 1px solid #d8e0ff;
   }
-  .no-result {
-    text-align: center;
-    color: #999;
-    padding: 20px;
-    font-size: 14px;
-  }
+  .no-result { text-align: center; color: #999; padding: 20px; font-size: 14px; }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>🎵 قافیه‌یاب فارسی</h1>
   <p class="subtitle">یه کلمه بنویس، هم‌قافیه‌هاشو ببین</p>
-  
   <div class="input-box">
     <input type="text" id="wordInput" placeholder="مثلاً: دل" autocomplete="off">
     <button id="searchBtn">بگرد</button>
   </div>
-  
   <div id="results"></div>
 </div>
 
 <script>
-// لیست کلمات نمونه (بعداً بزرگتر میشه)
+// ============ لیست کلمات (فعلاً کوچیک - بعداً بزرگ میشه) ============
 const wordList = [
   "آب","کتاب","شتاب","حساب","آفتاب","گلاب","باب","شباب","خراب","سحاب",
   "دل","گل","مل","بلبل","سنبل","قفل","کامل","باطل","عاقل","ساحل",
@@ -126,45 +84,83 @@ const wordList = [
   "باران","یاران","کاروان","دلیران","سواران","سرداران","بیکران","کهکشان","آسان","پنهان"
 ];
 
-const input = document.getElementById('wordInput');
-const btn = document.getElementById('searchBtn');
-const results = document.getElementById('results');
+// ============ حروف و مصوت‌های فارسی ============
+const shortVowels = ['َ','ِ','ُ','ا','و','ی']; // مصوت‌های کوتاه و بلند
 
-// تابع تشخیص آخرین بخش قافیه
-function getEnding(word) {
-  if (word.length <= 2) return word;         // کلمه خیلی کوتاه
-  if (word.length === 3) return word.slice(-2); // مثل: شب، تب
-  return word.slice(-2);                      // کلمات بلندتر
+// تشخیص اینکه حرف، صامت هست یا مصوت
+function isVowel(ch) {
+  return ['ا','آ','و','ی','ه','ء'].includes(ch);
 }
 
-// تابع اصلی قافیه‌یابی (هوشمند)
+// ============ استخراج آخرین هجا (قلب منطق قافیه) ============
+// هدف: آخرین بخش صوتی کلمه رو دربیاریم
+// مثال: "گل" → "َل" ، "کتاب" → "تاب" ، "قفل" → "ُفل"
+
+function getLastSyllable(word) {
+  if (word.length === 0) return "";
+  if (word.length === 1) return word;
+  
+  const chars = word.split('');
+  const last = chars[chars.length - 1];
+  
+  // الگوی ۱: کلمه به مصوت ختم میشه (مثل "خانه" → "ـه")
+  // در این حالت، آخرین ۳ حرف رو بگیر (مثلاً "انه")
+  if (isVowel(last)) {
+    return word.slice(-3);
+  }
+  
+  // الگوی ۲: کلمه به صامت ختم میشه
+  // ببین قبل از صامت آخر، مصوت داریم؟
+  const beforeLast = chars[chars.length - 2];
+  
+  // زیرالگو ۲.۱: فقط ۲ حرف داریم (مثل "گل" → "ـَل")
+  if (word.length <= 2) {
+    return word;
+  }
+  
+  // زیرالگو ۲.۲: حرف قبل از آخر، مصوت هست (مثل "کتاب" → "ـتاب")
+  if (isVowel(beforeLast)) {
+    // آخرین ۲ یا ۳ حرف بسته به طول
+    return word.length <= 3 ? word : word.slice(-3);
+  }
+  
+  // زیرالگو ۲.۳: حرف قبل از آخر، صامت هست (مثل "قفل" → "ـُفل")
+  // یعنی دو صامت پشت هم داریم → آخرین ۳ حرف
+  return word.slice(-3);
+}
+
+// ============ مقایسه دو کلمه برای قافیه ============
+function isRhyme(word1, word2) {
+  if (word1 === word2) return false;
+  
+  const syl1 = getLastSyllable(word1);
+  const syl2 = getLastSyllable(word2);
+  
+  // قافیه واقعی: آخرین هجاها یکی باشن
+  if (syl1 === syl2) return true;
+  
+  // قافیه تقریبی: اگه هر دو تک‌هجایی‌ان و آخرشون یکی هست
+  if (word1.length <= 2 && word2.length <= 2) {
+    return word1.slice(-1) === word2.slice(-1);
+  }
+  
+  // کلمه کوتاه توی بلند: "دل" توی "بلبل"
+  if (word2.endsWith(word1) || word1.endsWith(word2)) {
+    return true;
+  }
+  
+  return false;
+}
+
+// ============ تابع اصلی ============
 function findRhymes(word) {
   word = word.trim();
   if (!word) return [];
   
-  const targetEnding = getEnding(word);
-  
-  return wordList.filter(w => {
-    if (w === word) return false;
-    
-    // حالت ۱: آخر کلمه دقیقاً یکی هست
-    if (getEnding(w) === targetEnding) return true;
-    
-    // حالت ۲: آخرین حرف کلمه با آخرین حرف کلمه کاربر یکی باشه
-    // (برای کلمات کوتاه مثل «دل» و «گل»)
-    if (word.length <= 3 && w.length <= 3) {
-      if (w.slice(-1) === word.slice(-1)) return true;
-    }
-    
-    // حالت ۳: کلمه کاربر توی آخر کلمه لیست هست
-    // (مثلاً «دل» توی «بلبل» هست)
-    if (w.endsWith(word)) return true;
-    
-    return false;
-  });
+  return wordList.filter(w => isRhyme(word, w));
 }
 
-// تابع نمایش نتایج
+// ============ نمایش نتایج ============
 function showResults(word, matches) {
   if (matches.length === 0) {
     results.innerHTML = '<div class="no-result">قافیه‌ای پیدا نشد 😔</div>';
@@ -180,7 +176,11 @@ function showResults(word, matches) {
   results.innerHTML = html;
 }
 
-// دکمه جستجو
+// ============ رویدادها ============
+const input = document.getElementById('wordInput');
+const btn = document.getElementById('searchBtn');
+const results = document.getElementById('results');
+
 btn.addEventListener('click', () => {
   const word = input.value.trim();
   if (!word) {
@@ -191,11 +191,8 @@ btn.addEventListener('click', () => {
   showResults(word, matches);
 });
 
-// جستجو با Enter
 input.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') {
-    btn.click();
-  }
+  if (e.key === 'Enter') btn.click();
 });
 </script>
 </body>
