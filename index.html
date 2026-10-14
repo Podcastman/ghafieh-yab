@@ -82,7 +82,8 @@ let wordList = [];
 async function loadWords() {
   try {
     const response = await fetch('words.txt');
-    const text = await response.text();
+    const buffer = await response.arrayBuffer();
+    const text = new TextDecoder('utf-8').decode(buffer);
     wordList = text.split('\n')
       .map(w => w.trim())
       .filter(w => w.length > 0);
@@ -92,7 +93,6 @@ async function loadWords() {
     results.innerHTML = '<div class="no-result">خطا در بارگذاری لیست کلمات 😔</div>';
   }
 }
-
 // ============ توابع کمکی ============
 function isVowel(ch) {
   return ['ا','آ','و','ی','ه','ء'].includes(ch);
