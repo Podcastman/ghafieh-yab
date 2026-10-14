@@ -60,6 +60,7 @@
     border: 1px solid #d8e0ff;
   }
   .no-result { text-align: center; color: #999; padding: 20px; font-size: 14px; }
+  .loading { text-align: center; color: #667eea; padding: 20px; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -74,22 +75,29 @@
 </div>
 
 <script>
-// ============ لیست کلمات ============
-const wordList = [
-  "آب","کتاب","شتاب","حساب","آفتاب","گلاب","باب","شباب","خراب","سحاب",
-  "دل","گل","مل","بلبل","سنبل","قفل","کامل","باطل","عاقل","ساحل",
-  "شب","تب","لب","قلب","عرب","غرب","خوشب","طلب","سبب","ادب",
-  "آسمان","زمان","جهان","خزان","ارغوان","پهلوان","دوان","روان","توان","جوان",
-  "خانه","دانه","یانه","شبانه","دوستانه","عاشقانه","مردانه","زنانه","کودکانه","خردمندانه",
-  "باران","یاران","کاروان","دلیران","سواران","سرداران","بیکران","کهکشان","آسان","پنهان"
-];
+// ============ متغیر جهانی لیست کلمات ============
+let wordList = [];
 
-// ============ حروف و مصوت‌ها ============
+// ============ بارگذاری لیست کلمات از فایل ============
+async function loadWords() {
+  try {
+    const response = await fetch('words.txt');
+    const text = await response.text();
+    wordList = text.split('\n')
+      .map(w => w.trim())
+      .filter(w => w.length > 0);
+    console.log('لیست کلمات بارگذاری شد: ' + wordList.length + ' کلمه');
+  } catch (error) {
+    console.error('خطا در بارگذاری لیست:', error);
+    results.innerHTML = '<div class="no-result">خطا در بارگذاری لیست کلمات 😔</div>';
+  }
+}
+
+// ============ توابع کمکی ============
 function isVowel(ch) {
   return ['ا','آ','و','ی','ه','ء'].includes(ch);
 }
 
-// ============ استخراج آخرین هجا ============
 function getLastSyllable(word) {
   if (word.length === 0) return "";
   if (word.length === 1) return word;
@@ -97,7 +105,6 @@ function getLastSyllable(word) {
   const chars = word.split('');
   const last = chars[chars.length - 1];
   
-  // کلمه به مصوت ختم میشه
   if (isVowel(last)) {
     return word.slice(-3);
   }
@@ -113,15 +120,14 @@ function getLastSyllable(word) {
   return word.slice(-3);
 }
 
-// ============ قانون جدید: قافیه + وزن دقیق ============
+// ============ قانون قافیه + وزن ============
 function isRhyme(word1, word2) {
   if (word1 === word2) return false;
   
-  // قانون 1: طول کلمه باید دقیقاً یکسان باشه
-  // (چون تو فارسی نوشتاری، تعداد حرف ≈ تعداد هجا)
+  // قانون 1: طول کلمه یکسان
   if (word1.length !== word2.length) return false;
   
-  // قانون 2: آخرین هجا باید دقیقاً یکسان باشه
+  // قانون 2: آخرین هجا یکسان
   const syl1 = getLastSyllable(word1);
   const syl2 = getLastSyllable(word2);
   
@@ -171,6 +177,9 @@ btn.addEventListener('click', () => {
 input.addEventListener('keypress', (e) => {
   if (e.key === 'Enter') btn.click();
 });
+
+// ============ شروع: بارگذاری کلمات ============
+loadWords();
 </script>
 </body>
 </html>
