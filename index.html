@@ -74,7 +74,7 @@
 </div>
 
 <script>
-// ============ لیست کلمات (فعلاً کوچیک - بعداً بزرگ میشه) ============
+// ============ لیست کلمات ============
 const wordList = [
   "آب","کتاب","شتاب","حساب","آفتاب","گلاب","باب","شباب","خراب","سحاب",
   "دل","گل","مل","بلبل","سنبل","قفل","کامل","باطل","عاقل","ساحل",
@@ -84,44 +84,9 @@ const wordList = [
   "باران","یاران","کاروان","دلیران","سواران","سرداران","بیکران","کهکشان","آسان","پنهان"
 ];
 
-// ============ حروف و مصوت‌های فارسی ============
+// ============ حروف و مصوت‌ها ============
 function isVowel(ch) {
   return ['ا','آ','و','ی','ه','ء'].includes(ch);
-}
-
-// اعراب‌ها (مصوت‌های کوتاه) — اگه کلمه اعراب داشته باشه
-const diacritics = ['َ','ِ','ُ','ً','ٍ','ٌ','ْ','ّ'];
-
-// ============ شمارش هجاهای کلمه (تقریبی) ============
-// قاعده: هر مصوت بلند (ا/و/ی) یا هر مصوت کوتاه (فتحه/کسره/ضمه) = 1 هجا
-function countSyllables(word) {
-  if (!word) return 0;
-  
-  let count = 0;
-  const chars = word.split('');
-  
-  for (let i = 0; i < chars.length; i++) {
-    const ch = chars[i];
-    
-    // مصوت بلند
-    if (['ا','آ','و','ی'].includes(ch)) {
-      // استثنا: "و" اگه بعدش مصوت باشه (مثل "خواهر") — تقریبی
-      count++;
-    }
-    // مصوت کوتاه (اعراب)
-    else if (diacritics.includes(ch)) {
-      count++;
-    }
-    // "ه" آخر کلمه معمولاً یه هجا می‌سازه
-    else if (ch === 'ه' && i === chars.length - 1) {
-      count++;
-    }
-  }
-  
-  // اگه هیچ مصوتی نبود، حداقل 1 هجا
-  if (count === 0) count = 1;
-  
-  return count;
 }
 
 // ============ استخراج آخرین هجا ============
@@ -148,29 +113,19 @@ function getLastSyllable(word) {
   return word.slice(-3);
 }
 
-// ============ مقایسه دو کلمه برای قافیه + وزن ============
+// ============ قانون جدید: قافیه + وزن دقیق ============
 function isRhyme(word1, word2) {
   if (word1 === word2) return false;
   
-  // شرط 1: هم‌قافیه (آخرین هجا یکسان)
+  // قانون 1: طول کلمه باید دقیقاً یکسان باشه
+  // (چون تو فارسی نوشتاری، تعداد حرف ≈ تعداد هجا)
+  if (word1.length !== word2.length) return false;
+  
+  // قانون 2: آخرین هجا باید دقیقاً یکسان باشه
   const syl1 = getLastSyllable(word1);
   const syl2 = getLastSyllable(word2);
-  if (syl1 !== syl2) {
-    // استثنا: کلمات کوتاه
-    if (word1.length <= 2 && word2.length <= 2) {
-      if (word1.slice(-1) !== word2.slice(-1)) return false;
-    } else {
-      return false;
-    }
-  }
   
-  // شرط 2: هم‌وزن (تعداد هجا یکسان)
-  const count1 = countSyllables(word1);
-  const count2 = countSyllables(word2);
-  if (count1 !== count2) return false;
-  
-  // شرط 3: طول کلمه مشابه (حداکثر 2 حرف اختلاف)
-  if (Math.abs(word1.length - word2.length) > 2) return false;
+  if (syl1 !== syl2) return false;
   
   return true;
 }
