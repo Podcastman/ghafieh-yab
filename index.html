@@ -100,12 +100,6 @@
     padding: 20px;
     font-size: 14px;
   }
-  .loading {
-    text-align: center;
-    color: #667eea;
-    padding: 20px;
-    font-size: 14px;
-  }
 </style>
 </head>
 <body>
@@ -136,21 +130,38 @@ const input = document.getElementById('wordInput');
 const btn = document.getElementById('searchBtn');
 const results = document.getElementById('results');
 
-// تابع اصلی قافیه‌یابی
+// تابع تشخیص آخرین بخش قافیه
+function getEnding(word) {
+  if (word.length <= 2) return word;         // کلمه خیلی کوتاه
+  if (word.length === 3) return word.slice(-2); // مثل: شب، تب
+  return word.slice(-2);                      // کلمات بلندتر
+}
+
+// تابع اصلی قافیه‌یابی (هوشمند)
 function findRhymes(word) {
   word = word.trim();
   if (!word) return [];
   
-  // آخرین ۲ حرف رو برای مقایسه برمی‌داریم
-  const getEnding = (w) => w.length <= 2 ? w : w.slice(-2);
   const targetEnding = getEnding(word);
   
-  const matches = wordList.filter(w => {
+  return wordList.filter(w => {
     if (w === word) return false;
-    return getEnding(w) === targetEnding;
+    
+    // حالت ۱: آخر کلمه دقیقاً یکی هست
+    if (getEnding(w) === targetEnding) return true;
+    
+    // حالت ۲: آخرین حرف کلمه با آخرین حرف کلمه کاربر یکی باشه
+    // (برای کلمات کوتاه مثل «دل» و «گل»)
+    if (word.length <= 3 && w.length <= 3) {
+      if (w.slice(-1) === word.slice(-1)) return true;
+    }
+    
+    // حالت ۳: کلمه کاربر توی آخر کلمه لیست هست
+    // (مثلاً «دل» توی «بلبل» هست)
+    if (w.endsWith(word)) return true;
+    
+    return false;
   });
-  
-  return matches;
 }
 
 // تابع نمایش نتایج
