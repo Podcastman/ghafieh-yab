@@ -4,9 +4,188 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>قافیه‌یاب فارسی</title>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    font-family: Tahoma, 'Segoe UI', sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+  .container {
+    background: white;
+    border-radius: 20px;
+    padding: 30px 20px;
+    max-width: 500px;
+    width: 100%;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  }
+  h1 {
+    text-align: center;
+    color: #333;
+    margin-bottom: 10px;
+    font-size: 24px;
+  }
+  .subtitle {
+    text-align: center;
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 25px;
+  }
+  .input-box {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  #wordInput {
+    flex: 1;
+    padding: 14px 16px;
+    font-size: 16px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    font-family: inherit;
+    outline: none;
+    transition: border 0.3s;
+  }
+  #wordInput:focus {
+    border-color: #667eea;
+  }
+  #searchBtn {
+    padding: 14px 24px;
+    font-size: 16px;
+    background: #667eea;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: bold;
+    transition: background 0.3s;
+  }
+  #searchBtn:active {
+    background: #5568d3;
+  }
+  #results {
+    min-height: 100px;
+  }
+  .result-title {
+    color: #667eea;
+    font-size: 14px;
+    margin-bottom: 12px;
+    font-weight: bold;
+  }
+  .words-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .word-item {
+    background: #f0f4ff;
+    color: #444;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 15px;
+    border: 1px solid #d8e0ff;
+  }
+  .no-result {
+    text-align: center;
+    color: #999;
+    padding: 20px;
+    font-size: 14px;
+  }
+  .loading {
+    text-align: center;
+    color: #667eea;
+    padding: 20px;
+    font-size: 14px;
+  }
+</style>
 </head>
 <body>
-<h1>قافیه‌یاب فارسی</h1>
-<p>به زودی اینجا قافیه پیدا می‌کنیم...</p>
+<div class="container">
+  <h1>🎵 قافیه‌یاب فارسی</h1>
+  <p class="subtitle">یه کلمه بنویس، هم‌قافیه‌هاشو ببین</p>
+  
+  <div class="input-box">
+    <input type="text" id="wordInput" placeholder="مثلاً: دل" autocomplete="off">
+    <button id="searchBtn">بگرد</button>
+  </div>
+  
+  <div id="results"></div>
+</div>
+
+<script>
+// لیست کلمات نمونه (بعداً بزرگتر میشه)
+const wordList = [
+  "آب","کتاب","شتاب","حساب","آفتاب","گلاب","باب","شباب","خراب","سحاب",
+  "دل","گل","مل","بلبل","سنبل","قفل","کامل","باطل","عاقل","ساحل",
+  "شب","تب","لب","قلب","عرب","غرب","خوشب","طلب","سبب","ادب",
+  "آسمان","زمان","جهان","خزان","ارغوان","پهلوان","دوان","روان","توان","جوان",
+  "خانه","دانه","یانه","شبانه","دوستانه","عاشقانه","مردانه","زنانه","کودکانه","خردمندانه",
+  "باران","یاران","کاروان","دلیران","سواران","سرداران","بیکران","کهکشان","آسان","پنهان"
+];
+
+const input = document.getElementById('wordInput');
+const btn = document.getElementById('searchBtn');
+const results = document.getElementById('results');
+
+// تابع اصلی قافیه‌یابی
+function findRhymes(word) {
+  word = word.trim();
+  if (!word) return [];
+  
+  // آخرین ۲ حرف رو برای مقایسه برمی‌داریم
+  const getEnding = (w) => w.length <= 2 ? w : w.slice(-2);
+  const targetEnding = getEnding(word);
+  
+  const matches = wordList.filter(w => {
+    if (w === word) return false;
+    return getEnding(w) === targetEnding;
+  });
+  
+  return matches;
+}
+
+// تابع نمایش نتایج
+function showResults(word, matches) {
+  if (matches.length === 0) {
+    results.innerHTML = '<div class="no-result">قافیه‌ای پیدا نشد 😔</div>';
+    return;
+  }
+  
+  const html = `
+    <div class="result-title">${matches.length} قافیه برای «${word}»:</div>
+    <div class="words-list">
+      ${matches.map(m => `<span class="word-item">${m}</span>`).join('')}
+    </div>
+  `;
+  results.innerHTML = html;
+}
+
+// دکمه جستجو
+btn.addEventListener('click', () => {
+  const word = input.value.trim();
+  if (!word) {
+    results.innerHTML = '<div class="no-result">یه کلمه بنویس اول 🙂</div>';
+    return;
+  }
+  const matches = findRhymes(word);
+  showResults(word, matches);
+});
+
+// جستجو با Enter
+input.addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') {
+    btn.click();
+  }
+});
+</script>
 </body>
 </html>
