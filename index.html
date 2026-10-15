@@ -150,60 +150,43 @@ function cleanWord(w) {
   return w.replace(/\r/g, '').replace(/\n/g, '').replace(/\u200c/g, '').replace(/^\s+|\s+$/g, '');
 }
 
-// ============ شمارش هجا (دقیق) ============
-// قاعده: هر مصوت بلند = 1 هجا
-//        هر ترکیب صامت+صامت (بدون مصوت بینشون) = 1 هجا
+// شمارش هجا
 function countSyllables(word) {
   if (!word) return 0;
-  
   var vowels = ['ا','آ','و','ی'];
   var count = 0;
   var i = 0;
   
   while (i < word.length) {
     var ch = word[i];
-    
-    // اگه مصوت بلند بود → ۱ هجا
     if (vowels.indexOf(ch) !== -1) {
       count++;
       i++;
       continue;
     }
-    
-    // صامت: ببین بعدش چیه
     if (i + 1 < word.length) {
       var next = word[i + 1];
-      
-      // اگه بعدی مصوت بود → این ترکیب ۱ هجا (صامت + مصوت)
       if (vowels.indexOf(next) !== -1) {
         count++;
         i += 2;
         continue;
       }
-      
-      // اگه بعدی صامت بود → ۱ هجا (صامت + مصوت کوتاه + صامت)
       count++;
       i += 2;
       continue;
     }
-    
-    // آخرین حرف صامت تنها
     count++;
     i++;
   }
-  
   return count || 1;
 }
 
-// ============ استخراج «آخرین هجا» ============
-// یعنی از آخرین مصوت به بعد + صامت قبلش
+// آخرین هجا
 function getLastSyllable(word) {
   if (word.length === 0) return "";
   if (word.length === 1) return word;
   
   var vowels = ['ا','آ','و','ی'];
-  
-  // آخرین مصوت رو پیدا کن
   var lastVowelIdx = -1;
   for (var i = word.length - 1; i >= 0; i--) {
     if (vowels.indexOf(word[i]) !== -1) {
@@ -212,83 +195,57 @@ function getLastSyllable(word) {
     }
   }
   
-  // اگه مصوت نداشت → آخرین ۲ حرف
   if (lastVowelIdx === -1) {
     return word.length <= 2 ? word : word.slice(-2);
   }
-  
-  // اگه مصوت آخرین حرف بود → از مصوت تا آخر + ۱ حرف قبلش
   if (lastVowelIdx === word.length - 1) {
-    if (lastVowelIdx >= 1) {
-      return word.substring(lastVowelIdx - 1);
-    }
+    if (lastVowelIdx >= 1) return word.substring(lastVowelIdx - 1);
     return word.substring(lastVowelIdx);
   }
-  
-  // از ۱ حرف قبل مصوت تا آخر
-  if (lastVowelIdx >= 1) {
-    return word.substring(lastVowelIdx - 1);
-  }
-  
+  if (lastVowelIdx >= 1) return word.substring(lastVowelIdx - 1);
   return word.substring(lastVowelIdx);
 }
 
-// ============ قافیه دقیق ============
+// قافیه
 function isRhyme(w1, w2) {
   if (w1 === w2) return false;
-  
-  // شرط ۱: آخرین هجا یکسان
-  var s1 = getLastSyllable(w1);
-  var s2 = getLastSyllable(w2);
-  if (s1 !== s2) return false;
-  
-  // شرط ۲: تعداد هجا یکسان
+  if (getLastSyllable(w1) !== getLastSyllable(w2)) return false;
   if (countSyllables(w1) !== countSyllables(w2)) return false;
-  
   return true;
 }
 
-// ============ هموزن ============
+// هموزن
 function isSameWeight(w1, w2) {
   if (w1 === w2) return false;
-  
-  // شرط ۱: قافیه
   if (!isRhyme(w1, w2)) return false;
-  
-  // شرط ۲: طول کلمه یکسان (دقیق)
   if (w1.length !== w2.length) return false;
-  
   return true;
 }
 
-// ============ پیدا کردن قافیه ============
+// پیدا کردن
 function findRhymes(word) {
   var matches = [];
   var seen = {};
-  
   for (var i = 0; i < wordList.length; i++) {
     var w = wordList[i];
     if (w === word) continue;
     if (seen[w]) continue;
-    
     var match = false;
     if (currentMode === 'rhyme') {
       match = isRhyme(word, w);
     } else {
       match = isSameWeight(word, w);
     }
-    
     if (match) {
       matches.push(w);
       seen[w] = true;
     }
   }
-  
   matches.sort(function(a, b) { return a.localeCompare(b, 'fa'); });
   return matches;
 }
 
-// ============ نمایش ============
+// نمایش
 function showResults(word, matches) {
   var results = document.getElementById('results');
   if (matches.length === 0) {
@@ -305,7 +262,7 @@ function showResults(word, matches) {
   results.innerHTML = html;
 }
 
-// ============ بارگذاری ============
+// بارگذاری
 function loadWords() {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'words.txt?_=' + Date.now(), true);
@@ -327,7 +284,7 @@ function loadWords() {
   xhr.send();
 }
 
-// ============ رویدادها ============
+// رویدادها
 var tabs = document.querySelectorAll('.tab');
 for (var i = 0; i < tabs.length; i++) {
   tabs[i].addEventListener('click', function() {
