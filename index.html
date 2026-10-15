@@ -5,13 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>قافیه‌یاب فارسی</title>
 <style>
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    -webkit-tap-highlight-color: transparent;
-  }
-  
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
   body {
     font-family: 'Segoe UI', Tahoma, sans-serif;
     background: linear-gradient(135deg, #14B8A6 0%, #0F766E 50%, #334155 100%);
@@ -20,72 +14,17 @@
     justify-content: center;
     align-items: center;
     padding: 16px;
-    position: relative;
-    overflow-x: hidden;
   }
-  
-  body::before {
-    content: '';
-    position: fixed;
-    top: -50%;
-    right: -50%;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(94, 234, 212, 0.15) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-  
-  body::after {
-    content: '';
-    position: fixed;
-    bottom: -50%;
-    left: -50%;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(20, 184, 166, 0.15) 0%, transparent 70%);
-    pointer-events: none;
-    z-index: 0;
-  }
-  
   .container {
     background: rgba(255, 255, 255, 0.98);
-    backdrop-filter: blur(20px);
-    -webkit-backdrop-filter: blur(20px);
     border-radius: 28px;
     padding: 32px 22px;
     max-width: 480px;
     width: 100%;
-    box-shadow: 
-      0 25px 60px rgba(0, 0, 0, 0.25),
-      0 0 0 1px rgba(255, 255, 255, 0.5) inset;
-    position: relative;
-    z-index: 1;
-    animation: fadeIn 0.5s ease;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.25);
   }
-  
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(20px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  h1 {
-    text-align: center;
-    color: #0F766E;
-    margin-bottom: 8px;
-    font-size: 26px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
-  
-  .subtitle {
-    text-align: center;
-    color: #64748B;
-    font-size: 13px;
-    margin-bottom: 24px;
-    line-height: 1.5;
-  }
-  
+  h1 { text-align: center; color: #0F766E; margin-bottom: 8px; font-size: 26px; font-weight: 700; }
+  .subtitle { text-align: center; color: #64748B; font-size: 13px; margin-bottom: 24px; }
   .tabs {
     display: flex;
     background: #F1F5F4;
@@ -93,7 +32,6 @@
     padding: 5px;
     margin-bottom: 20px;
   }
-  
   .tab {
     flex: 1;
     padding: 12px 8px;
@@ -105,22 +43,15 @@
     border: none;
     border-radius: 12px;
     cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
+    transition: all 0.3s;
   }
-  
   .tab.active {
     color: white;
     background: linear-gradient(135deg, #14B8A6, #0F766E);
     box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
   }
-  
-  .input-box {
-    display: flex;
-    gap: 10px;
-    margin-bottom: 24px;
-  }
-  
+  .input-box { display: flex; gap: 10px; margin-bottom: 24px; }
   #wordInput {
     flex: 1;
     padding: 16px 18px;
@@ -130,22 +61,14 @@
     border-radius: 16px;
     font-family: inherit;
     outline: none;
-    transition: all 0.3s;
     color: #1E293B;
     font-weight: 500;
   }
-  
-  #wordInput::placeholder {
-    color: #94A3B8;
-    font-weight: 400;
-  }
-  
   #wordInput:focus {
     background: white;
     border-color: #14B8A6;
     box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15);
   }
-  
   #searchBtn {
     padding: 16px 28px;
     font-size: 15px;
@@ -156,19 +79,11 @@
     cursor: pointer;
     font-family: inherit;
     font-weight: 700;
-    transition: all 0.3s;
     box-shadow: 0 4px 14px rgba(20, 184, 166, 0.4);
     white-space: nowrap;
   }
-  
-  #searchBtn:active {
-    transform: scale(0.96);
-  }
-  
-  #results {
-    min-height: 80px;
-  }
-  
+  #searchBtn:active { transform: scale(0.96); }
+  #results { min-height: 80px; }
   .result-title {
     color: #0F766E;
     font-size: 13px;
@@ -179,13 +94,7 @@
     border-radius: 10px;
     border-right: 4px solid #14B8A6;
   }
-  
-  .words-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  
+  .words-list { display: flex; flex-wrap: wrap; gap: 8px; }
   .word-item {
     background: linear-gradient(135deg, #F0FDFA, #CCFBF1);
     color: #0F766E;
@@ -194,19 +103,7 @@
     font-size: 15px;
     font-weight: 600;
     border: 1px solid #99F6E4;
-    animation: popIn 0.3s ease;
   }
-  
-  .word-item:active {
-    transform: scale(0.95);
-    background: linear-gradient(135deg, #CCFBF1, #5EEAD4);
-  }
-  
-  @keyframes popIn {
-    from { opacity: 0; transform: scale(0.8); }
-    to { opacity: 1; transform: scale(1); }
-  }
-  
   .no-result {
     text-align: center;
     color: #94A3B8;
@@ -216,7 +113,6 @@
     border-radius: 16px;
     border: 2px dashed #E2E8E6;
   }
-  
   #status {
     text-align: center;
     color: #94A3B8;
@@ -233,8 +129,8 @@
   <p class="subtitle">یه کلمه بنویس، قافیه‌هاشو ببین</p>
   
   <div class="tabs">
-    <button class="tab active" data-mode="rhyme">هم‌قافیه</button>
-    <button class="tab" data-mode="weight">هم‌وزن</button>
+    <button class="tab active" data-mode="2">۲ حرف آخر</button>
+    <button class="tab" data-mode="3">۳ حرف آخر</button>
   </div>
   
   <div class="input-box">
@@ -247,137 +143,39 @@
 </div>
 
 <script>
-// ============ متغیرها ============
 var wordList = [];
-var currentMode = 'rhyme';
+var currentMode = 2;
 
-// ============ پاکسازی کلمه ============
 function cleanWord(w) {
-  return w
-    .replace(/\r/g, '')
-    .replace(/\n/g, '')
-    .replace(/\u200c/g, '')
-    .replace(/^\s+|\s+$/g, '');
+  return w.replace(/\r/g, '').replace(/\n/g, '').replace(/\u200c/g, '').replace(/^\s+|\s+$/g, '');
 }
 
-// ============ پیدا کردن آخرین مصوت ============
-function lastVowelIndex(word) {
-  for (var i = word.length - 1; i >= 0; i--) {
-    var ch = word[i];
-    if (ch === 'ا' || ch === 'آ' || ch === 'و' || ch === 'ی') {
-      return i;
-    }
-  }
-  return -1;
+function getEnding(word) {
+  var len = parseInt(currentMode);
+  if (word.length <= len) return word;
+  return word.substring(word.length - len);
 }
 
-// ============ استخراج «قافیه» کلمه ============
-// از «صامت قبل از آخرین مصوت» تا آخر کلمه
-function getRhymePart(word) {
-  if (word.length === 0) return "";
-  if (word.length === 1) return word;
-  
-  var vowelIdx = lastVowelIndex(word);
-  
-  // اگه مصوت نداشت
-  if (vowelIdx === -1) {
-    return word.slice(-2);
-  }
-  
-  // اگه مصوت آخرین حرف بود (مثل «زیبا» → آخری «ا»)
-  // از صامت قبلش شروع کن
-  if (vowelIdx === word.length - 1) {
-    // اگه صامت قبلش هست
-    if (vowelIdx >= 1) {
-      return word.substring(vowelIdx - 1);
-    }
-    return word.substring(vowelIdx);
-  }
-  
-  // مصوت آخر نیست، ولی صامت بعدش هست (مثل «باران» → «ان»)
-  // اگه صامت قبل از مصوت هست، اون رو هم بگیر
-  if (vowelIdx >= 1) {
-    return word.substring(vowelIdx - 1);
-  }
-  
-  return word.substring(vowelIdx);
-}
-
-// ============ شمارش هجا ============
-function countSyllables(word) {
-  var count = 0;
-  for (var i = 0; i < word.length; i++) {
-    var ch = word[i];
-    if (ch === 'ا' || ch === 'آ' || ch === 'و' || ch === 'ی') {
-      count++;
-    }
-  }
-  if (count === 0) count = 1;
-  return count;
-}
-
-// ============ هم‌قافیه ============
-// آخرین «قافیه» (مصوت + صامت بعدش + صامت قبلش) باید یکسان باشه
-function isRhyme(w1, w2) {
-  if (w1 === w2) return false;
-  
-  var r1 = getRhymePart(w1);
-  var r2 = getRhymePart(w2);
-  
-  // قافیه باید دقیقاً یکسان باشه
-  if (r1 !== r2) return false;
-  
-  // طول کلمه هم نباید خیلی فرق کنه
-  if (Math.abs(w1.length - w2.length) > 2) return false;
-  
-  return true;
-}
-
-// ============ هم‌وزن ============
-function isSameWeight(w1, w2) {
-  if (w1 === w2) return false;
-  
-  // قافیه یکسان
-  if (!isRhyme(w1, w2)) return false;
-  
-  // تعداد هجا یکسان
-  if (countSyllables(w1) !== countSyllables(w2)) return false;
-  
-  // طول دقیقاً یکسان یا حداکثر ۱ اختلاف
-  if (Math.abs(w1.length - w2.length) > 1) return false;
-  
-  return true;
-}
-
-// ============ پیدا کردن قافیه ============
 function findRhymes(word) {
   var matches = [];
+  var ending = getEnding(word);
   for (var i = 0; i < wordList.length; i++) {
     var w = wordList[i];
-    var match = false;
-    
-    if (currentMode === 'rhyme') {
-      match = isRhyme(word, w);
-    } else {
-      match = isSameWeight(word, w);
+    if (w === word) continue;
+    if (getEnding(w) === ending) {
+      matches.push(w);
     }
-    
-    if (match) matches.push(w);
   }
   return matches;
 }
 
-// ============ نمایش نتایج ============
 function showResults(word, matches) {
   var results = document.getElementById('results');
-  
   if (matches.length === 0) {
     results.innerHTML = '<div class="no-result">قافیه‌ای پیدا نشد 😔</div>';
     return;
   }
-  
-  var modeName = currentMode === 'rhyme' ? 'هم‌قافیه' : 'هم‌وزن';
-  var html = '<div class="result-title">' + matches.length + ' ' + modeName + ' برای «' + word + '»</div>';
+  var html = '<div class="result-title">' + matches.length + ' قافیه برای «' + word + '»</div>';
   html += '<div class="words-list">';
   for (var i = 0; i < matches.length; i++) {
     html += '<span class="word-item">' + matches[i] + '</span>';
@@ -386,7 +184,6 @@ function showResults(word, matches) {
   results.innerHTML = html;
 }
 
-// ============ بارگذاری کلمات ============
 function loadWords() {
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'words.txt?_=' + Date.now(), true);
@@ -405,19 +202,13 @@ function loadWords() {
       }
     }
   };
-  xhr.onerror = function() {
-    document.getElementById('status').textContent = '❌ خطای شبکه';
-  };
   xhr.send();
 }
 
-// ============ رویدادها ============
 var tabs = document.querySelectorAll('.tab');
 for (var i = 0; i < tabs.length; i++) {
   tabs[i].addEventListener('click', function() {
-    for (var j = 0; j < tabs.length; j++) {
-      tabs[j].classList.remove('active');
-    }
+    for (var j = 0; j < tabs.length; j++) tabs[j].classList.remove('active');
     this.classList.add('active');
     currentMode = this.getAttribute('data-mode');
     document.getElementById('results').innerHTML = '';
@@ -430,15 +221,13 @@ document.getElementById('searchBtn').addEventListener('click', function() {
     document.getElementById('results').innerHTML = '<div class="no-result">یه کلمه بنویس اول 🙂</div>';
     return;
   }
-  var matches = findRhymes(word);
-  showResults(word, matches);
+  showResults(word, findRhymes(word));
 });
 
 document.getElementById('wordInput').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') document.getElementById('searchBtn').click();
 });
 
-// ============ شروع ============
 loadWords();
 </script>
 </body>
