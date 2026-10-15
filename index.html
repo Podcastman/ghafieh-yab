@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>قافیه‌یاب فارسی</title>
-<script src="words.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -62,6 +61,7 @@
   }
   .no-result { text-align: center; color: #999; padding: 20px; font-size: 14px; }
   .loading { text-align: center; color: #667eea; padding: 20px; font-size: 14px; }
+  #status { text-align: center; color: #999; font-size: 12px; margin-top: 10px; }
 </style>
 </head>
 <body>
@@ -73,23 +73,13 @@
     <button id="searchBtn">بگرد</button>
   </div>
   <div id="results"></div>
+  <div id="status">در حال بارگذاری لیست کلمات...</div>
 </div>
 
 <script>
-// ============ متغیر جهانی لیست کلمات ============
+// ============ متغیر جهانی ============
 let wordList = [];
 
-// ============ بارگذاری لیست کلمات از فایل ============
-function loadWords() {
-  // کلمات از فایل words.js میاد
-  if (typeof WORDS !== 'undefined') {
-    wordList = WORDS.map(w => w.trim()).filter(w => w.length > 0);
-    console.log('لیست کلمات بارگذاری شد: ' + wordList.length + ' کلمه');
-  } else {
-    console.error('فایل words.js لود نشد');
-    results.innerHTML = '<div class="no-result">خطا در بارگذاری لیست کلمات 😔</div>';
-  }
-}
 // ============ توابع کمکی ============
 function isVowel(ch) {
   return ['ا','آ','و','ی','ه','ء'].includes(ch);
@@ -98,55 +88,36 @@ function isVowel(ch) {
 function getLastSyllable(word) {
   if (word.length === 0) return "";
   if (word.length === 1) return word;
-  
   const chars = word.split('');
   const last = chars[chars.length - 1];
-  
-  if (isVowel(last)) {
-    return word.slice(-3);
-  }
-  
+  if (isVowel(last)) return word.slice(-3);
   const beforeLast = chars[chars.length - 2];
-  
   if (word.length <= 2) return word;
-  
-  if (isVowel(beforeLast)) {
-    return word.length <= 3 ? word : word.slice(-3);
-  }
-  
+  if (isVowel(beforeLast)) return word.length <= 3 ? word : word.slice(-3);
   return word.slice(-3);
 }
 
-// ============ قانون قافیه + وزن ============
 function isRhyme(word1, word2) {
   if (word1 === word2) return false;
-  
-  // قانون 1: طول کلمه یکسان
   if (word1.length !== word2.length) return false;
-  
-  // قانون 2: آخرین هجا یکسان
   const syl1 = getLastSyllable(word1);
   const syl2 = getLastSyllable(word2);
-  
   if (syl1 !== syl2) return false;
-  
   return true;
 }
 
-// ============ تابع اصلی ============
 function findRhymes(word) {
   word = word.trim();
   if (!word) return [];
   return wordList.filter(w => isRhyme(word, w));
 }
 
-// ============ نمایش نتایج ============
 function showResults(word, matches) {
+  const results = document.getElementById('results');
   if (matches.length === 0) {
     results.innerHTML = '<div class="no-result">قافیه هم‌وزنی پیدا نشد 😔</div>';
     return;
   }
-  
   const html = `
     <div class="result-title">${matches.length} قافیه هم‌وزن برای «${word}»:</div>
     <div class="words-list">
@@ -156,26 +127,52 @@ function showResults(word, matches) {
   results.innerHTML = html;
 }
 
-// ============ رویدادها ============
-const input = document.getElementById('wordInput');
-const btn = document.getElementById('searchBtn');
-const results = document.getElementById('results');
+// ============ بارگذاری کلمات با XMLHttpRequest ============
+function loadWords() {
+  const xhr = new XMLHttpRequest();
+  xhr.open('GET', 'words.txt', true);
+  xhr.responseType = 'text';
+  
+  xhr.onload = function() {
+    if (xhr.status === 200 || xhr.status === 0) {
+      const text = xhr.responseText;
+      wordList = text.split('\n')
+        .map(w => w.trim())
+        .filter(w => w.length > 0);
+      
+      document.getElementById('status').textContent = 
+        '✅ ' + wordList.length + ' کلمه بارگذاری شد';
+      console.log('کلمات لود شد:', wordList.length);
+    } else {
+      document.getElementById('status').textContent = 
+        '❌ خطا در بارگذاری (کد: ' + xhr.status + ')';
+    }
+  };
+  
+  xhr.onerror = function() {
+    document.getElementById('status').textContent = '❌ خطای شبکه';
+  };
+  
+  xhr.send();
+}
 
-btn.addEventListener('click', () => {
-  const word = input.value.trim();
+// ============ رویدادها ============
+document.getElementById('searchBtn').addEventListener('click', () => {
+  const word = document.getElementById('wordInput').value.trim();
   if (!word) {
-    results.innerHTML = '<div class="no-result">یه کلمه بنویس اول 🙂</div>';
+    document.getElementById('results').innerHTML = 
+      '<div class="no-result">یه کلمه بنویس اول 🙂</div>';
     return;
   }
   const matches = findRhymes(word);
   showResults(word, matches);
 });
 
-input.addEventListener('keypress', (e) => {
-  if (e.key === 'Enter') btn.click();
+document.getElementById('wordInput').addEventListener('keypress', (e) => {
+  if (e.key === 'Enter') document.getElementById('searchBtn').click();
 });
 
-// ============ شروع: بارگذاری کلمات ============
+// ============ شروع ============
 loadWords();
 </script>
 </body>
