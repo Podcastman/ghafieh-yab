@@ -137,8 +137,8 @@ function loadWords() {
     if (xhr.status === 200 || xhr.status === 0) {
       const text = xhr.responseText;
       wordList = text.split('\n')
-        .map(w => w.trim())
-        .filter(w => w.length > 0);
+  .map(w => w.trim().replace(/\r/g, '').replace(/\u200c/g, ''))
+  .filter(w => w.length > 0);
       
       document.getElementById('status').textContent = 
         '✅ ' + wordList.length + ' کلمه بارگذاری شد';
