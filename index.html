@@ -7,7 +7,7 @@
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
-    font-family: Tahoma, 'Segoe UI', sans-serif;
+    font-family: Tahoma, sans-serif;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
     display: flex;
@@ -60,8 +60,7 @@
     border: 1px solid #d8e0ff;
   }
   .no-result { text-align: center; color: #999; padding: 20px; font-size: 14px; }
-  .loading { text-align: center; color: #667eea; padding: 20px; font-size: 14px; }
-  #status { text-align: center; color: #999; font-size: 12px; margin-top: 10px; }
+  #status { text-align: center; color: #888; font-size: 12px; margin-top: 15px; }
 </style>
 </head>
 <body>
@@ -73,102 +72,118 @@
     <button id="searchBtn">بگرد</button>
   </div>
   <div id="results"></div>
-  <div id="status">در حال بارگذاری لیست کلمات...</div>
+  <div id="status">در حال بارگذاری...</div>
 </div>
 
 <script>
-// ============ متغیر جهانی ============
-let wordList = [];
+// ============ متغیرها ============
+var wordList = [];
 
-// ============ توابع کمکی ============
-function isVowel(ch) {
-  return ['ا','آ','و','ی','ه','ء'].includes(ch);
+// ============ تابع: پاکسازی کلمه ============
+function cleanWord(w) {
+  return w
+    .replace(/\r/g, '')
+    .replace(/\n/g, '')
+    .replace(/\u200c/g, '')
+    .replace(/^\s+|\s+$/g, '');
 }
 
-function getLastSyllable(word) {
-  if (word.length === 0) return "";
-  if (word.length === 1) return word;
-  const chars = word.split('');
-  const last = chars[chars.length - 1];
-  if (isVowel(last)) return word.slice(-3);
-  const beforeLast = chars[chars.length - 2];
-  if (word.length <= 2) return word;
-  if (isVowel(beforeLast)) return word.length <= 3 ? word : word.slice(-3);
-  return word.slice(-3);
+// ============ تابع: آخرین ۲ حرف ============
+function lastTwo(word) {
+  if (word.length < 2) return word;
+  return word.substring(word.length - 2);
 }
 
-function isRhyme(word1, word2) {
-  if (word1 === word2) return false;
-  if (word1.length !== word2.length) return false;
-  const syl1 = getLastSyllable(word1);
-  const syl2 = getLastSyllable(word2);
-  if (syl1 !== syl2) return false;
+// ============ تابع: شمارش هجا (تقریبی) ============
+function countSyllables(word) {
+  var count = 0;
+  for (var i = 0; i < word.length; i++) {
+    var ch = word[i];
+    if (ch === 'ا' || ch === 'آ' || ch === 'و' || ch === 'ی') {
+      count++;
+    }
+  }
+  if (count === 0) count = 1;
+  return count;
+}
+
+// ============ تابع: بررسی قافیه ============
+function isRhyme(w1, w2) {
+  if (w1 === w2) return false;
+  
+  // شرط ۱: آخرین ۲ حرف یکسان
+  if (lastTwo(w1) !== lastTwo(w2)) return false;
+  
+  // شرط ۲: طول کلمه اختلاف حداکثر ۱ حرف
+  if (Math.abs(w1.length - w2.length) > 1) return false;
+  
   return true;
 }
 
+// ============ تابع: پیدا کردن قافیه ============
 function findRhymes(word) {
-  word = word.trim();
-  if (!word) return [];
-  return wordList.filter(w => isRhyme(word, w));
+  var matches = [];
+  for (var i = 0; i < wordList.length; i++) {
+    if (isRhyme(word, wordList[i])) {
+      matches.push(wordList[i]);
+    }
+  }
+  return matches;
 }
 
+// ============ تابع: نمایش نتایج ============
 function showResults(word, matches) {
-  const results = document.getElementById('results');
+  var results = document.getElementById('results');
   if (matches.length === 0) {
-    results.innerHTML = '<div class="no-result">قافیه هم‌وزنی پیدا نشد 😔</div>';
+    results.innerHTML = '<div class="no-result">قافیه‌ای پیدا نشد 😔</div>';
     return;
   }
-  const html = `
-    <div class="result-title">${matches.length} قافیه هم‌وزن برای «${word}»:</div>
-    <div class="words-list">
-      ${matches.map(m => `<span class="word-item">${m}</span>`).join('')}
-    </div>
-  `;
+  var html = '<div class="result-title">' + matches.length + ' قافیه برای «' + word + '»:</div>';
+  html += '<div class="words-list">';
+  for (var i = 0; i < matches.length; i++) {
+    html += '<span class="word-item">' + matches[i] + '</span>';
+  }
+  html += '</div>';
   results.innerHTML = html;
 }
 
-// ============ بارگذاری کلمات با XMLHttpRequest ============
+// ============ بارگذاری کلمات ============
 function loadWords() {
-  const xhr = new XMLHttpRequest();
-  xhr.open('GET', 'words.txt', true);
-  xhr.responseType = 'text';
-  
-  xhr.onload = function() {
-    if (xhr.status === 200 || xhr.status === 0) {
-      const text = xhr.responseText;
-      wordList = text.split('\n')
-  .map(w => w.trim().replace(/\r/g, '').replace(/\u200c/g, ''))
-  .filter(w => w.length > 0);
-      
-      document.getElementById('status').textContent = 
-        '✅ ' + wordList.length + ' کلمه بارگذاری شد';
-      console.log('کلمات لود شد:', wordList.length);
-    } else {
-      document.getElementById('status').textContent = 
-        '❌ خطا در بارگذاری (کد: ' + xhr.status + ')';
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', 'words.txt?_=' + Date.now(), true);
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200 || xhr.status === 0) {
+        var lines = xhr.responseText.split('\n');
+        wordList = [];
+        for (var i = 0; i < lines.length; i++) {
+          var w = cleanWord(lines[i]);
+          if (w.length > 0) wordList.push(w);
+        }
+        document.getElementById('status').textContent = '✅ ' + wordList.length + ' کلمه آماده';
+      } else {
+        document.getElementById('status').textContent = '❌ خطا: ' + xhr.status;
+      }
     }
   };
-  
   xhr.onerror = function() {
     document.getElementById('status').textContent = '❌ خطای شبکه';
   };
-  
   xhr.send();
 }
 
 // ============ رویدادها ============
-document.getElementById('searchBtn').addEventListener('click', () => {
-  const word = document.getElementById('wordInput').value.trim();
+document.getElementById('searchBtn').addEventListener('click', function() {
+  var word = cleanWord(document.getElementById('wordInput').value);
   if (!word) {
-    document.getElementById('results').innerHTML = 
-      '<div class="no-result">یه کلمه بنویس اول 🙂</div>';
+    document.getElementById('results').innerHTML = '<div class="no-result">یه کلمه بنویس اول 🙂</div>';
     return;
   }
-  const matches = findRhymes(word);
+  var matches = findRhymes(word);
   showResults(word, matches);
 });
 
-document.getElementById('wordInput').addEventListener('keypress', (e) => {
+document.getElementById('wordInput').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') document.getElementById('searchBtn').click();
 });
 
