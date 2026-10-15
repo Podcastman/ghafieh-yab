@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>قافیه‌یاب فارسی</title>
+<script src="words.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -79,17 +80,13 @@
 let wordList = [];
 
 // ============ بارگذاری لیست کلمات از فایل ============
-async function loadWords() {
-  try {
-    const response = await fetch('words.txt');
-    const buffer = await response.arrayBuffer();
-    const text = new TextDecoder('utf-8').decode(buffer);
-    wordList = text.split('\n')
-      .map(w => w.trim())
-      .filter(w => w.length > 0);
+function loadWords() {
+  // کلمات از فایل words.js میاد
+  if (typeof WORDS !== 'undefined') {
+    wordList = WORDS.map(w => w.trim()).filter(w => w.length > 0);
     console.log('لیست کلمات بارگذاری شد: ' + wordList.length + ' کلمه');
-  } catch (error) {
-    console.error('خطا در بارگذاری لیست:', error);
+  } else {
+    console.error('فایل words.js لود نشد');
     results.innerHTML = '<div class="no-result">خطا در بارگذاری لیست کلمات 😔</div>';
   }
 }
