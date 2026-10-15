@@ -24,7 +24,6 @@
     overflow-x: hidden;
   }
   
-  /* حباب‌های تزئینی */
   body::before {
     content: '';
     position: fixed;
@@ -87,14 +86,12 @@
     line-height: 1.5;
   }
   
-  /* ============ تب‌های انتخاب ============ */
   .tabs {
     display: flex;
     background: #F1F5F4;
     border-radius: 16px;
     padding: 5px;
     margin-bottom: 20px;
-    position: relative;
   }
   
   .tab {
@@ -110,8 +107,6 @@
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
-    position: relative;
-    z-index: 1;
   }
   
   .tab.active {
@@ -120,11 +115,6 @@
     box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
   }
   
-  .tab:not(.active):active {
-    background: #E2E8E6;
-  }
-  
-  /* ============ کادر جستجو ============ */
   .input-box {
     display: flex;
     gap: 10px;
@@ -173,10 +163,8 @@
   
   #searchBtn:active {
     transform: scale(0.96);
-    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.4);
   }
   
-  /* ============ نتایج ============ */
   #results {
     min-height: 80px;
   }
@@ -206,7 +194,6 @@
     font-size: 15px;
     font-weight: 600;
     border: 1px solid #99F6E4;
-    transition: all 0.2s;
     animation: popIn 0.3s ease;
   }
   
@@ -245,19 +232,16 @@
   <h1>🎵 قافیه‌یاب فارسی</h1>
   <p class="subtitle">یه کلمه بنویس، قافیه‌هاشو ببین</p>
   
-  <!-- تب‌های انتخاب -->
   <div class="tabs">
     <button class="tab active" data-mode="rhyme">هم‌قافیه</button>
     <button class="tab" data-mode="weight">هم‌وزن</button>
   </div>
   
-  <!-- کادر جستجو -->
   <div class="input-box">
     <input type="text" id="wordInput" placeholder="مثلاً: دل" autocomplete="off">
     <button id="searchBtn">بگرد</button>
   </div>
   
-  <!-- نتایج -->
   <div id="results"></div>
   <div id="status">در حال بارگذاری...</div>
 </div>
@@ -265,7 +249,7 @@
 <script>
 // ============ متغیرها ============
 var wordList = [];
-var currentMode = 'rhyme'; // rhyme یا weight
+var currentMode = 'rhyme';
 
 // ============ پاکسازی کلمه ============
 function cleanWord(w) {
@@ -276,16 +260,47 @@ function cleanWord(w) {
     .replace(/^\s+|\s+$/g, '');
 }
 
-// ============ آخرین حرف ============
-function lastChar(word) {
-  if (word.length < 1) return word;
-  return word.substring(word.length - 1);
+// ============ پیدا کردن آخرین مصوت ============
+function lastVowelIndex(word) {
+  for (var i = word.length - 1; i >= 0; i--) {
+    var ch = word[i];
+    if (ch === 'ا' || ch === 'آ' || ch === 'و' || ch === 'ی') {
+      return i;
+    }
+  }
+  return -1;
 }
 
-// ============ آخرین ۲ حرف ============
-function lastTwo(word) {
-  if (word.length < 2) return word;
-  return word.substring(word.length - 2);
+// ============ استخراج «قافیه» کلمه ============
+// از «صامت قبل از آخرین مصوت» تا آخر کلمه
+function getRhymePart(word) {
+  if (word.length === 0) return "";
+  if (word.length === 1) return word;
+  
+  var vowelIdx = lastVowelIndex(word);
+  
+  // اگه مصوت نداشت
+  if (vowelIdx === -1) {
+    return word.slice(-2);
+  }
+  
+  // اگه مصوت آخرین حرف بود (مثل «زیبا» → آخری «ا»)
+  // از صامت قبلش شروع کن
+  if (vowelIdx === word.length - 1) {
+    // اگه صامت قبلش هست
+    if (vowelIdx >= 1) {
+      return word.substring(vowelIdx - 1);
+    }
+    return word.substring(vowelIdx);
+  }
+  
+  // مصوت آخر نیست، ولی صامت بعدش هست (مثل «باران» → «ان»)
+  // اگه صامت قبل از مصوت هست، اون رو هم بگیر
+  if (vowelIdx >= 1) {
+    return word.substring(vowelIdx - 1);
+  }
+  
+  return word.substring(vowelIdx);
 }
 
 // ============ شمارش هجا ============
@@ -301,43 +316,34 @@ function countSyllables(word) {
   return count;
 }
 
-// ============ قافیه ساده (فقط آخرین حرف) ============
-function isSimpleRhyme(w1, w2) {
+// ============ هم‌قافیه ============
+// آخرین «قافیه» (مصوت + صامت بعدش + صامت قبلش) باید یکسان باشه
+function isRhyme(w1, w2) {
   if (w1 === w2) return false;
   
-  // آخرین حرف یکسان
-  if (lastChar(w1) !== lastChar(w2)) return false;
+  var r1 = getRhymePart(w1);
+  var r2 = getRhymePart(w2);
   
-  // اختلاف طول حداکثر ۲ حرف
+  // قافیه باید دقیقاً یکسان باشه
+  if (r1 !== r2) return false;
+  
+  // طول کلمه هم نباید خیلی فرق کنه
   if (Math.abs(w1.length - w2.length) > 2) return false;
   
   return true;
 }
 
-// ============ قافیه دقیق (آخرین ۲ حرف) ============
-function isStrictRhyme(w1, w2) {
-  if (w1 === w2) return false;
-  
-  // آخرین ۲ حرف یکسان
-  if (lastTwo(w1) !== lastTwo(w2)) return false;
-  
-  // اختلاف طول حداکثر ۱ حرف
-  if (Math.abs(w1.length - w2.length) > 1) return false;
-  
-  return true;
-}
-
-// ============ هموزن ============
+// ============ هم‌وزن ============
 function isSameWeight(w1, w2) {
   if (w1 === w2) return false;
   
-  // آخرین حرف یکسان
-  if (lastChar(w1) !== lastChar(w2)) return false;
+  // قافیه یکسان
+  if (!isRhyme(w1, w2)) return false;
   
   // تعداد هجا یکسان
   if (countSyllables(w1) !== countSyllables(w2)) return false;
   
-  // طول مشابه
+  // طول دقیقاً یکسان یا حداکثر ۱ اختلاف
   if (Math.abs(w1.length - w2.length) > 1) return false;
   
   return true;
@@ -351,10 +357,8 @@ function findRhymes(word) {
     var match = false;
     
     if (currentMode === 'rhyme') {
-      // حالت همقافیه: اول دقیق، بعد ساده
-      match = isStrictRhyme(word, w) || isSimpleRhyme(word, w);
+      match = isRhyme(word, w);
     } else {
-      // حالت هموزن
       match = isSameWeight(word, w);
     }
     
@@ -408,24 +412,18 @@ function loadWords() {
 }
 
 // ============ رویدادها ============
-// تب‌ها
 var tabs = document.querySelectorAll('.tab');
 for (var i = 0; i < tabs.length; i++) {
   tabs[i].addEventListener('click', function() {
-    // پاک کردن active از همه
     for (var j = 0; j < tabs.length; j++) {
       tabs[j].classList.remove('active');
     }
-    // اضافه کردن active به تب کلیک‌شده
     this.classList.add('active');
     currentMode = this.getAttribute('data-mode');
-    
-    // پاک کردن نتایج قبلی
     document.getElementById('results').innerHTML = '';
   });
 }
 
-// دکمه بگرد
 document.getElementById('searchBtn').addEventListener('click', function() {
   var word = cleanWord(document.getElementById('wordInput').value);
   if (!word) {
@@ -436,7 +434,6 @@ document.getElementById('searchBtn').addEventListener('click', function() {
   showResults(word, matches);
 });
 
-// Enter
 document.getElementById('wordInput').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') document.getElementById('searchBtn').click();
 });
