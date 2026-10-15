@@ -5,72 +5,259 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>قافیه‌یاب فارسی</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  
   body {
-    font-family: Tahoma, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+    background: linear-gradient(135deg, #14B8A6 0%, #0F766E 50%, #334155 100%);
     min-height: 100vh;
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 20px;
+    padding: 16px;
+    position: relative;
+    overflow-x: hidden;
   }
-  .container {
-    background: white;
-    border-radius: 20px;
-    padding: 30px 20px;
-    max-width: 500px;
+  
+  /* حباب‌های تزئینی */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    right: -50%;
     width: 100%;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    height: 100%;
+    background: radial-gradient(circle, rgba(94, 234, 212, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
   }
-  h1 { text-align: center; color: #333; margin-bottom: 10px; font-size: 24px; }
-  .subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 25px; }
-  .input-box { display: flex; gap: 8px; margin-bottom: 20px; }
-  #wordInput {
+  
+  body::after {
+    content: '';
+    position: fixed;
+    bottom: -50%;
+    left: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(20, 184, 166, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  
+  .container {
+    background: rgba(255, 255, 255, 0.98);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 28px;
+    padding: 32px 22px;
+    max-width: 480px;
+    width: 100%;
+    box-shadow: 
+      0 25px 60px rgba(0, 0, 0, 0.25),
+      0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+    position: relative;
+    z-index: 1;
+    animation: fadeIn 0.5s ease;
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  
+  h1 {
+    text-align: center;
+    color: #0F766E;
+    margin-bottom: 8px;
+    font-size: 26px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+  
+  .subtitle {
+    text-align: center;
+    color: #64748B;
+    font-size: 13px;
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  
+  /* ============ تب‌های انتخاب ============ */
+  .tabs {
+    display: flex;
+    background: #F1F5F4;
+    border-radius: 16px;
+    padding: 5px;
+    margin-bottom: 20px;
+    position: relative;
+  }
+  
+  .tab {
     flex: 1;
-    padding: 14px 16px;
-    font-size: 16px;
-    border: 2px solid #ddd;
-    border-radius: 12px;
-    font-family: inherit;
-    outline: none;
-  }
-  #wordInput:focus { border-color: #667eea; }
-  #searchBtn {
-    padding: 14px 24px;
-    font-size: 16px;
-    background: #667eea;
-    color: white;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    color: #64748B;
+    background: transparent;
     border: none;
     border-radius: 12px;
     cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
-    font-weight: bold;
+    position: relative;
+    z-index: 1;
   }
-  #searchBtn:active { background: #5568d3; }
-  #results { min-height: 100px; }
-  .result-title { color: #667eea; font-size: 14px; margin-bottom: 12px; font-weight: bold; }
-  .words-list { display: flex; flex-wrap: wrap; gap: 8px; }
-  .word-item {
-    background: #f0f4ff;
-    color: #444;
-    padding: 8px 14px;
-    border-radius: 20px;
+  
+  .tab.active {
+    color: white;
+    background: linear-gradient(135deg, #14B8A6, #0F766E);
+    box-shadow: 0 4px 12px rgba(20, 184, 166, 0.4);
+  }
+  
+  .tab:not(.active):active {
+    background: #E2E8E6;
+  }
+  
+  /* ============ کادر جستجو ============ */
+  .input-box {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  
+  #wordInput {
+    flex: 1;
+    padding: 16px 18px;
+    font-size: 16px;
+    border: 2px solid transparent;
+    background: #F1F5F4;
+    border-radius: 16px;
+    font-family: inherit;
+    outline: none;
+    transition: all 0.3s;
+    color: #1E293B;
+    font-weight: 500;
+  }
+  
+  #wordInput::placeholder {
+    color: #94A3B8;
+    font-weight: 400;
+  }
+  
+  #wordInput:focus {
+    background: white;
+    border-color: #14B8A6;
+    box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.15);
+  }
+  
+  #searchBtn {
+    padding: 16px 28px;
     font-size: 15px;
-    border: 1px solid #d8e0ff;
+    background: linear-gradient(135deg, #14B8A6, #0F766E);
+    color: white;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 700;
+    transition: all 0.3s;
+    box-shadow: 0 4px 14px rgba(20, 184, 166, 0.4);
+    white-space: nowrap;
   }
-  .no-result { text-align: center; color: #999; padding: 20px; font-size: 14px; }
-  #status { text-align: center; color: #888; font-size: 12px; margin-top: 15px; }
+  
+  #searchBtn:active {
+    transform: scale(0.96);
+    box-shadow: 0 2px 8px rgba(20, 184, 166, 0.4);
+  }
+  
+  /* ============ نتایج ============ */
+  #results {
+    min-height: 80px;
+  }
+  
+  .result-title {
+    color: #0F766E;
+    font-size: 13px;
+    margin-bottom: 14px;
+    font-weight: 700;
+    padding: 8px 12px;
+    background: #F0FDFA;
+    border-radius: 10px;
+    border-right: 4px solid #14B8A6;
+  }
+  
+  .words-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .word-item {
+    background: linear-gradient(135deg, #F0FDFA, #CCFBF1);
+    color: #0F766E;
+    padding: 9px 16px;
+    border-radius: 12px;
+    font-size: 15px;
+    font-weight: 600;
+    border: 1px solid #99F6E4;
+    transition: all 0.2s;
+    animation: popIn 0.3s ease;
+  }
+  
+  .word-item:active {
+    transform: scale(0.95);
+    background: linear-gradient(135deg, #CCFBF1, #5EEAD4);
+  }
+  
+  @keyframes popIn {
+    from { opacity: 0; transform: scale(0.8); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  
+  .no-result {
+    text-align: center;
+    color: #94A3B8;
+    padding: 30px 20px;
+    font-size: 14px;
+    background: #F8FAF9;
+    border-radius: 16px;
+    border: 2px dashed #E2E8E6;
+  }
+  
+  #status {
+    text-align: center;
+    color: #94A3B8;
+    font-size: 11px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #F1F5F4;
+  }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>🎵 قافیه‌یاب فارسی</h1>
-  <p class="subtitle">قافیه‌های هم‌وزن برای کلمه‌ات</p>
+  <p class="subtitle">یه کلمه بنویس، قافیه‌هاشو ببین</p>
+  
+  <!-- تب‌های انتخاب -->
+  <div class="tabs">
+    <button class="tab active" data-mode="rhyme">هم‌قافیه</button>
+    <button class="tab" data-mode="weight">هم‌وزن</button>
+  </div>
+  
+  <!-- کادر جستجو -->
   <div class="input-box">
     <input type="text" id="wordInput" placeholder="مثلاً: دل" autocomplete="off">
     <button id="searchBtn">بگرد</button>
   </div>
+  
+  <!-- نتایج -->
   <div id="results"></div>
   <div id="status">در حال بارگذاری...</div>
 </div>
@@ -78,8 +265,9 @@
 <script>
 // ============ متغیرها ============
 var wordList = [];
+var currentMode = 'rhyme'; // rhyme یا weight
 
-// ============ تابع: پاکسازی کلمه ============
+// ============ پاکسازی کلمه ============
 function cleanWord(w) {
   return w
     .replace(/\r/g, '')
@@ -88,13 +276,19 @@ function cleanWord(w) {
     .replace(/^\s+|\s+$/g, '');
 }
 
-// ============ تابع: آخرین ۲ حرف ============
+// ============ آخرین حرف ============
+function lastChar(word) {
+  if (word.length < 1) return word;
+  return word.substring(word.length - 1);
+}
+
+// ============ آخرین ۲ حرف ============
 function lastTwo(word) {
   if (word.length < 2) return word;
   return word.substring(word.length - 2);
 }
 
-// ============ تابع: شمارش هجا (تقریبی) ============
+// ============ شمارش هجا ============
 function countSyllables(word) {
   var count = 0;
   for (var i = 0; i < word.length; i++) {
@@ -107,38 +301,79 @@ function countSyllables(word) {
   return count;
 }
 
-// ============ تابع: بررسی قافیه ============
-function isRhyme(w1, w2) {
+// ============ قافیه ساده (فقط آخرین حرف) ============
+function isSimpleRhyme(w1, w2) {
   if (w1 === w2) return false;
   
-  // شرط ۱: آخرین ۲ حرف یکسان
+  // آخرین حرف یکسان
+  if (lastChar(w1) !== lastChar(w2)) return false;
+  
+  // اختلاف طول حداکثر ۲ حرف
+  if (Math.abs(w1.length - w2.length) > 2) return false;
+  
+  return true;
+}
+
+// ============ قافیه دقیق (آخرین ۲ حرف) ============
+function isStrictRhyme(w1, w2) {
+  if (w1 === w2) return false;
+  
+  // آخرین ۲ حرف یکسان
   if (lastTwo(w1) !== lastTwo(w2)) return false;
   
-  // شرط ۲: طول کلمه اختلاف حداکثر ۱ حرف
+  // اختلاف طول حداکثر ۱ حرف
   if (Math.abs(w1.length - w2.length) > 1) return false;
   
   return true;
 }
 
-// ============ تابع: پیدا کردن قافیه ============
+// ============ هموزن ============
+function isSameWeight(w1, w2) {
+  if (w1 === w2) return false;
+  
+  // آخرین حرف یکسان
+  if (lastChar(w1) !== lastChar(w2)) return false;
+  
+  // تعداد هجا یکسان
+  if (countSyllables(w1) !== countSyllables(w2)) return false;
+  
+  // طول مشابه
+  if (Math.abs(w1.length - w2.length) > 1) return false;
+  
+  return true;
+}
+
+// ============ پیدا کردن قافیه ============
 function findRhymes(word) {
   var matches = [];
   for (var i = 0; i < wordList.length; i++) {
-    if (isRhyme(word, wordList[i])) {
-      matches.push(wordList[i]);
+    var w = wordList[i];
+    var match = false;
+    
+    if (currentMode === 'rhyme') {
+      // حالت همقافیه: اول دقیق، بعد ساده
+      match = isStrictRhyme(word, w) || isSimpleRhyme(word, w);
+    } else {
+      // حالت هموزن
+      match = isSameWeight(word, w);
     }
+    
+    if (match) matches.push(w);
   }
   return matches;
 }
 
-// ============ تابع: نمایش نتایج ============
+// ============ نمایش نتایج ============
 function showResults(word, matches) {
   var results = document.getElementById('results');
+  
   if (matches.length === 0) {
     results.innerHTML = '<div class="no-result">قافیه‌ای پیدا نشد 😔</div>';
     return;
   }
-  var html = '<div class="result-title">' + matches.length + ' قافیه برای «' + word + '»:</div>';
+  
+  var modeName = currentMode === 'rhyme' ? 'هم‌قافیه' : 'هم‌وزن';
+  var html = '<div class="result-title">' + matches.length + ' ' + modeName + ' برای «' + word + '»</div>';
   html += '<div class="words-list">';
   for (var i = 0; i < matches.length; i++) {
     html += '<span class="word-item">' + matches[i] + '</span>';
@@ -173,6 +408,24 @@ function loadWords() {
 }
 
 // ============ رویدادها ============
+// تب‌ها
+var tabs = document.querySelectorAll('.tab');
+for (var i = 0; i < tabs.length; i++) {
+  tabs[i].addEventListener('click', function() {
+    // پاک کردن active از همه
+    for (var j = 0; j < tabs.length; j++) {
+      tabs[j].classList.remove('active');
+    }
+    // اضافه کردن active به تب کلیک‌شده
+    this.classList.add('active');
+    currentMode = this.getAttribute('data-mode');
+    
+    // پاک کردن نتایج قبلی
+    document.getElementById('results').innerHTML = '';
+  });
+}
+
+// دکمه بگرد
 document.getElementById('searchBtn').addEventListener('click', function() {
   var word = cleanWord(document.getElementById('wordInput').value);
   if (!word) {
@@ -183,6 +436,7 @@ document.getElementById('searchBtn').addEventListener('click', function() {
   showResults(word, matches);
 });
 
+// Enter
 document.getElementById('wordInput').addEventListener('keypress', function(e) {
   if (e.key === 'Enter') document.getElementById('searchBtn').click();
 });
